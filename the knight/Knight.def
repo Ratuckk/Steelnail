@@ -1,0 +1,39 @@
+; Definition file for player
+; Contains all the filenames needed for the character
+
+; Player information
+[Info]
+name = "The Knight"        ;Name of character
+displayname = "The Knight" ;Name of character to display
+versiondate = 11/09/2025   ;Version date of character
+mugenversion =1.1   ;Version of M.U.G.E.N character works on
+author = "Ziaker"      ;Character author name
+pal.defaults = 1,2,3,4;7,6,3,4  ;Default palettes in order of preference
+
+; Files for the player
+[Files]
+cmd     = knight.cmd   ;Command set
+cns     = knight.cns   ;Constants
+st      = knight.cns   ;States
+st1 = Nail.cns
+st2 = Extra.cns
+st3 = Normals.cns
+st4 = Helpers.cns
+st5 = projs.cns 
+st6 = shade.cns
+stcommon = common1.cns ;Common states
+sprite  = knight.sff   ;Sprite
+anim    = knight.air   ;Animation
+sound  = knight.snd   ;Sound
+;pal1   = knight.act   ;Palettes (can have up to 12)
+;pal2   =
+;pal3   =
+;pal4   =
+;pal5   =
+;pal6   =
+;pal7   =
+;pal8   =
+;pal9   =
+;pal10  =
+;pal11  =
+;pal12  =
