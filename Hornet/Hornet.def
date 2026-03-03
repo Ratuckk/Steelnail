@@ -1,0 +1,38 @@
+; Definition file for player
+; Contains all the filenames needed for the character
+
+; Player information
+[Info]
+name = "Hornet"        ;Name of character
+displayname = "Hornet" ;Name of character to display
+versiondate =  26/05/2025 ;Version date of character
+mugenversion =   1.1;Version of M.U.G.E.N character works on
+author = "Ziaker"      ;Character author name
+pal.defaults =  1,2,3,4 ;Default palettes in order of preference
+
+; Files for the player
+[Files]
+cmd     = Hornet.cmd   ;Command set
+cns     = Hornet.cns   ;Constants
+st      = Hornet.cns   ;States
+st1 = Nail.cns
+st2 = Extra.cns
+st3 = Normals.cns
+st4 = Helpers.cns
+st5 = projs.cns 
+stcommon = common1.cns ;Common states
+sprite  = Hornet.sff   ;Sprite
+anim    = Hornet.air   ;Animation
+sound  = Hornet.snd   ;Sound
+;pal1   = player.act   ;Palettes (can have up to 12)
+;pal2   =
+;pal3   =
+;pal4   =
+;pal5   =
+;pal6   =
+;pal7   =
+;pal8   =
+;pal9   =
+;pal10  =
+;pal11  =
+;pal12  =

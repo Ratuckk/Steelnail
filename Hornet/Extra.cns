@@ -1,0 +1,593 @@
+[StateDef -2]
+ 
+[State 0, PowerAdd]
+type = PowerAdd
+trigger1 = helper(7800),stateno = 7798
+value = 30
+
+
+[State 7800, Clash Helper]
+type		= Helper 
+triggerall      = !ishelper 
+triggerall = numhelper(7800) = 0
+triggerall = roundstate = 2
+trigger1        = 1
+helpertype	= Normal
+name		= "Clash Hit System"
+id		= 7800
+pos             = 0,0
+postype         = p1
+facing		= 1
+stateno		= 7799
+ownpal		= 1
+ignorehitpause  = 1
+supermovetime = 99
+pausemovetime = 99
+size.air.back = 35
+size.air.front = 35
+size.ground.back = 35
+size.ground.front = 35
+size.head.pos = 60
+size.mid.pos = 30 
+
+
+ ;===============================================================================
+; BLOCO DE VARS DE CLASH E HITBOX OFENSIVA
+;===============================================================================
+
+;-----------------------------------
+; Desativa var(18) quando fora de ataque válido
+;-----------------------------------
+[State 18, Var18 Off]
+type = VarSet
+trigger1 = stateno < 100   || stateno = 360                 ; fora de ataques principais
+trigger2 = movetype != A                   ; não está atacando
+trigger3 = numhelper(7800)
+trigger3 = helper(7800), stateno = [7799,7798]
+trigger4 = var(19) = 1 || enemy,var(19) = 1
+v = 18
+value = 0 
+
+;-----------------------------------
+; Ativa var(18) nos frames ativos dos ataques
+; (Exemplo: cada estado tem seu timing específico de hitbox ativa)
+;----------------------------------- 
+
+;-----------------------------------
+; Define var(19) = 0 (Clash OFF)
+;-----------------------------------
+[State 19, Var19 Off]
+type = VarSet
+triggerall = roundstate = 2
+trigger1 = stateno < 200                   ; fora de ataques ofensivos
+trigger2 = pos Y < 0                       ; está no ar
+trigger3 = stateno = 300
+trigger5 = stateno = 201 && p2stateno = 201     
+trigger4 = var(20) = 0              ; estado de neutralização
+v = 19
+value = 0
+ignorehitpause= 1
+
+[State 0, VarSet]
+type = Varadd
+triggerall = var(20) > 0
+trigger1 = gametime%1 = 0
+v = 20    ;fv = 10
+value = -1
+ignorehitpause = 1 
+
+[State 19, Vel]
+type = velset
+trigger1 = var(20) > 0 ;&& AnimElemTime(0) < 4
+x = (-vel X) -1- (p2bodydist X < 140)*1 - (p2bodydist X < 30)*2;player = 90,90
+ignorehitpause = 1
+
+[State 19, Vel]
+type = posadd
+trigger1 = var(20) > 0 ;&& AnimElemTime(0) < 4
+x = 0- (p2bodydist X < 140)*3 - (p2bodydist X < 50)*6;player = 90,90
+ignorehitpause = 1
+[State 19, Vel]
+type = velmul
+trigger1 = var(20) > 0 ;&& AnimElemTime(0) < 4
+x = .8
+persistent = 4
+ignorehitpause = 1
+[State 19, Vel]
+type = posadd
+trigger1 = var(20) > 0 ; && AnimElemTime(0) < 4
+x = -2;(-vel X*2);var(5)/2;player = 90,90
+ignorehitpause = 1
+[State 19, width]
+type = width
+trigger1 = var(20) =  1 ; && AnimElemTime(0) < 4
+value = 50,0;(-vel X*2);var(5)/2;player = 90,90
+ignorehitpause = 1
+
+;-----------------------------------
+; Define var(19) = 1 (Clash ON)
+; Ativado quando há colisão ativa entre ataques de ambos os lados
+;-----------------------------------
+[State 19, Var19 On]
+type = VarSet
+triggerall = var(20) > 0
+triggerall = roundstate = 2
+triggerall = movetype = A 
+trigger1 = movereversed &&  enemy, movereversed
+v = 19
+value = 1
+ignorehitpause = 1
+ 
+;----------------------------------- 
+
+[State 0, Air dash var]
+type = VarSet
+triggerall = movetype = I
+triggerall = ailevel && var(29) = 0
+trigger1 = power < enemy,power || var(48) < enemy,var(48) ;|| life < enemy,life
+trigger1 = pos Y >= -20 ;500
+var(29) = 45 + random%210
+
+[State 0, Air dash var]
+type = Varadd
+triggerall = var(29) > 0
+triggerall = movetype != H 
+trigger1 = 1;power >= enemy,power;500
+var(29) = -1
+persistent = 1
+ 
+;[State 0, PalFXWiz]
+;type = PalFX
+;trigger1 = var(18) = 1
+;time =9
+;add = 30,0,0
+;mul = 256,1,1
+;sinadd = 0,0,0,1
+;invertall = 0
+;color = 256
+
+
+[State 0, Air dash var]
+type = Varset
+triggerall = var(29) > 0
+triggerall = movetype = A || p2bodydist X > 200  || p2stateno = 360 ||p2stateno = [5000,5500]
+trigger1 = 1;power >= enemy,power;500
+var(29) = 0
+persistent = 1
+ 
+
+
+;===============================================================================
+; IA - Lógica de Movimento Estratégico
+; Calcula as intenções de movimentação em var(30)~var(33)
+;===============================================================================
+
+[State -1, IA - Desejo de subir]
+type = VarSet
+triggerall = ailevel
+trigger1 = (Enemy, StateType = S || Enemy, StateType = C) && (P2BodyDist Y = [-90, 0])
+var(30) = 1
+
+[State -1, IA - Desejo de descer]
+type = VarSet
+triggerall = ailevel && Pos Y < 0
+trigger1 = P2MoveType = A && P2BodyDist Y = [-90, -10]
+var(31) = 1
+
+[State -1, IA - Desejo de avançar]
+type = VarSet
+triggerall = ailevel 
+trigger1 = Enemy, MoveType != A || random < 300 || p2movetype = A && enemy,vel X > 7
+var(32) = 1
+
+[State -1, IA - Desejo de recuar]
+type = VarSet
+triggerall = ailevel
+trigger1 = P2MoveType = A  && enemy,vel X < 7
+var(33) = 1
+;==========================================================================
+ 
+[State 5050, 5]; Recover in mid air
+type = ChangeState
+triggerall = hitover = 1 && (stateno != [5000,5009]) && stateno = [5000,5500]
+triggerall = alive ;&& CanRecover =1
+trigger1 = 1; Command = "recovery" && !ailevel
+trigger2 = ailevel && random > life
+value = cond(pos Y >= 0,117,116) ;HITFALL_AIRRECOVER
+
+
+
+[State 0, Air dash var]
+type = VarSet
+trigger1 = pos Y = 0
+v = 6    ;fv = 10
+value = 0
+ignorehitpause = 1
+
+[State -2,デバッグ表示・上（武器あり）]
+type = DisplayToClipboard
+triggerall = !Ishelper
+trigger1 = 1;var(1) = 1
+text = "Distance X = %d,Y = %d, VEL X = %d  VEL Y = %d,var(29) = %d, var(42) = %d"
+params = floor(P2BodyDist X),floor(P2BodyDist Y),floor(VEL x), floor(vEL y),var(29), var(42)
+IgnoreHitPause = 1 
+   
+;===============================================================================
+; SISTEMA DE MÁSCARAS E STAGGER
+; Vars: 
+;   47 = Dano recebido
+;   48 = Máscaras restantes
+;   49 = Flag de Stagger
+;   43 = Timer de FX
+;   42 = Recharger de máscara 
+;===============================================================================
+;-------------------------------------------------------------------------------
+; FORÇA MUDANÇA DE ESTADO (quando Stagger está ativo)
+;-------------------------------------------------------------------------------
+[State 0, Forçar ChangeState Stagger]
+type = ChangeState
+triggerall = alive
+triggerall = time <= 3
+triggerall = stateno = [5000,5500]
+trigger1 = var(49) = 1
+value = 4997
+ctrl = 0
+ignorehitpause = 1
+
+
+;-------------------------------------------------------------------------------
+; SISTEMA DE RECHARGE DE MÁSCARAS (Var 42)
+;-------------------------------------------------------------------------------
+[State 0, Reset Recharger]
+type = VarSet
+trigger1 = stateno != 540
+trigger2 = var(42) >= 10
+trigger3 = var(48) = 5
+var(42) = 0
+
+[State 0, Incrementa Recharger]
+type = VarAdd
+trigger1 = stateno = 540 && time%9 = 0
+var(42) = 1
+ignorehitpause = 1
+
+
+;-------------------------------------------------------------------------------
+; RESETS INICIAIS (quando entra em Stagger ou RoundState reseta)
+;-------------------------------------------------------------------------------
+[State -2, Flag de Stagger]
+type = VarSet
+triggerall = alive
+triggerall = stateno = [5000,5500]
+trigger1 = var(48) = 0 && time = 1
+var(49) = 1
+
+[State -2, Reset Vars - Início do round]
+type = VarSet
+trigger1 = RoundState = 0
+var(47) = 0 
+
+[State -2, Reset Vars - Início do round]
+type = VarSet
+trigger1 = RoundState = 0
+var(48) = 5
+
+
+;-------------------------------------------------------------------------------
+; CONTROLE DE DANO RECEBIDO
+;-------------------------------------------------------------------------------
+[State -2, Receber dano]
+type = VarAdd
+triggerall = stateno = [5000,5500]
+trigger1 = !hitover && time = 0
+var(47) = 1 + GetHitVar(damage)
+[State -2, Receber dano]
+type = VarAdd
+triggerall = stateno = [5002,5009]
+trigger1 = time = 0
+var(47) = 55;1 + GetHitVar(damage)
+
+
+
+ 
+;-------------------------------------------------------------------------------
+; SISTEMA DE QUEBRA DE MÁSCARAS (FX timer + reset de dano)
+;-------------------------------------------------------------------------------
+[State -2, Ativar FX Timer]
+type = VarSet
+trigger1 = var(47) >= 200
+var(43) = 15
+ignorehitpause = 1
+
+[State -2, Reset FX Timer]
+type = VarSet
+trigger1 = var(43) < 0
+trigger2 = stateno = 4997
+var(43) = 0
+ignorehitpause = 1
+
+[State -2, Resetar dano após quebra]
+type = VarSet
+trigger1 = var(47) >= 200 && time = 0
+var(47) = 0
+ignorehitpause = 1
+
+
+;-------------------------------------------------------------------------------
+; HELPER DAS MÁSCARAS (HUD)
+;-------------------------------------------------------------------------------
+[State 0, Helper Masks]
+type = Helper
+triggerall = numhelper(88) = 0
+trigger1 = roundstate = 0
+trigger2 = roundstate = 2
+trigger3 = prevstateno = 4997
+helpertype = Normal
+name = "masks"
+ID = 88
+stateno = 88
+pos = 0,0
+postype = P1
+facing = 1
+keyctrl = 0
+ownpal = 0
+supermovetime = 50
+pausemovetime = 50 
+ignorehitpause = 1
+;===============================================================================
+
+[State 0, DestroySelf]
+type = DestroySelf
+trigger1 = ishelper
+trigger1 = stateno = [5000,5500]
+ignorehitpause =1
+
+[State 0, VarSet]
+type = VarSet
+trigger1 =stateno != 212 &&  animelemno(0) != 3
+trigger1 = stateno != 204 && animelemno(0) != [5,7]
+v = 23    ;fv = 10
+value = 0
+ignorehitpause = 1
+
+
+ [State 0, Helper]
+type = Helper
+triggerall = numhelper(2031) = 1
+triggerall = numhelper(2032) = 0
+trigger1 = helper(2031),stateno = 455
+helpertype = Normal ;Player
+name = "nail"
+ID = 2032
+stateno = 2032 
+pos = helper(2031),pos X + 20,-25
+postype = P1    ;P2, Front, Back, Left, Right
+facing = 1 
+ownpal = 1
+supermovetime = 40
+pausemovetime = 40 
+ignorehitpause = 1
+persistent = 1
+
+[State 0, RemoveExplod]
+type = RemoveExplod
+trigger1 = numhelper(2031) = 0
+id = 23 
+
+[State 0, RemoveExplod]
+type = RemoveExplod
+trigger1 = numhelper(2141) = 0
+id = 24
+[State 0, AssertSpecial]
+type = AssertSpecial
+trigger1 = 1
+ignorehitpause = 1
+flag = NoStandGuard 
+flag2 = Noairguard  
+
+;----------------------------------------------------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------------------------------------------------
+ ;===============================================================================
+; BLOCO DE VARS DE CLASH E HITBOX OFENSIVA
+;===============================================================================
+ 
+ 
+;---------------------------------------------------------------------------
+; D E F E N S E    P A R A M
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = time = 1
+trigger1 = stateno = 150 || stateno = 152 || stateno = 154
+;value = S3212,cond(random < 500,0,1)
+value = s777,4
+volume = 999
+channel = 25
+ignorehitpause = 1
+persistent = 1
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = time = 1
+trigger1 = stateno = 150 || stateno = 152 || stateno = 154
+value = S3212,cond(random < 500,0,1)
+;value = s777,4
+volume = 999
+channel = 21
+ignorehitpause = 1
+persistent = 1
+[State 0, Block Explod]
+type = Explod
+trigger1 = time = 1
+trigger1 = stateno = 150 || stateno = 152 || stateno = 154 
+anim = 8889;43302+var(0);random%4
+ID = 3
+pos = 50, - 40
+postype = p1  ;p2,front,back,left,right
+facing = 1
+vfacing = 1
+vel = -1
+bindtime = 1
+removetime = -2
+pausemovetime = 99
+supermovetime = 99
+scale = .6,.6
+sprpriority = 12
+persistent = 0
+ownpal = 1
+
+
+[State 0, Block Explod]
+type = Explod
+trigger1 = time <= 4
+trigger1 = stateno = 150 || stateno = 152 || stateno = 154 
+anim = 30802;43302+var(0);random%4
+ID = 3
+pos = 30, -40
+postype = p1  ;p2,front,back,left,right
+facing = 1
+vfacing = 1
+vel = -3
+bindtime = 1
+removetime = -2
+pausemovetime = 99
+supermovetime = 99
+scale = .15+time*.03,.43+time*0.01
+sprpriority = 12
+persistent = 0
+ownpal = 1
+
+
+[State 0, Block Explod]
+type = Explod
+trigger1 = time = 1
+trigger1 = stateno = 150 || stateno = 152 || stateno = 154
+anim = 43310;43302+var(0);random%4
+ID = 3
+pos = 30,-45
+postype = p1  ;p2,front,back,left,right
+facing = 1
+vfacing = 1
+bindtime = 1
+removetime = -2
+pausemovetime = 99
+supermovetime = 99
+scale = .43,.43
+angle = random
+sprpriority = 12
+persistent = 1
+ownpal = 1
+[State 0, BLock Explod]
+type = Explod
+trigger1 = time <= 3
+trigger1 = stateno = 150 || stateno = 152 || stateno = 154
+anim = 8182;43302+var(0);random%4
+ID = 3
+pos = 0,-45
+postype = p1  ;p2,front,back,left,right
+facing = -1
+vfacing = 1
+bindtime = 1
+removetime = -2
+pausemovetime = 99
+supermovetime = 99
+scale = .7,.5
+angle = 0+random%40 - random% 50;random
+sprpriority = 12
+persistent = 1
+ownpal = 1
+
+;---------------------------------------------------------------------------
+  
+
+
+
+
+[State 0, VarSet]
+type = VarSet
+triggerall = stateno != 360
+trigger1 = stateno != [200,300]
+v = 5    ;fv = 10
+value = 0
+ignorehitpause = 1
+
+
+[State -2, Speed effect]
+type = Helper 
+triggerall = vel X >= 4 || vel X <= -4 ;&& time = 1
+triggerall = pos Y = 0
+trigger1 = timemod = 4,0 ;&& time > 1 ;&& pos y = 0
+helpertype = normal
+name = "Speed effects"
+ID = 7001;8801
+stateno = 7001;8801;9993
+pos = -5-random%25,0;(-15-Random%35);0,0;5,-30-random%15
+postype = p1
+facing = cond ( vel X > 1,1,-1)
+ownpal = 1
+persistent = 0
+
+[State 60, Arena Grande atras]
+type = Explod
+triggerall = pos Y = 0
+trigger1 = vel X > 5;animelemno(0) = [9,12];time <= 15
+anim = 17101
+ID =  7100
+pos = -30,-20
+random = 0,40
+postype = p1  ;p2,front,back,left,right
+facing = 1
+vfacing = 1
+bindtime = 0
+removetime = -2
+supermove = 1
+scale = .15, 0.15
+sprpriority = 22
+ANGLE = 90
+trans = addalpha
+alpha = 140,256
+persistent = 6
+ownpal = 1
+removeongethit = 0
+ignorehitpause = 1
+
+[State 0, Explod]
+type = Explod
+trigger1 = stateno = 52 && time = 1
+trigger2 = stateno  = 214 && animelem = 4  && pos Y = 0
+anim = 7086;8859
+ID = 16891
+pos = 0,0
+postype = p1  ;p2,front,back,left,right
+facing = -1;cond(random< 500,1,-1)
+vfacing = 1
+sprpriority = -5
+removetime = -2
+;scale = .7,.6
+ownpal = 1
+persistent = 0
+ignorehitpause = 1
+pausemovetime = 99
+
+;This controller plays a sound everytime the player lands from a jump, or
+;from a back-dash.
+[State -3, Landing Sound]
+type = PlaySnd
+triggerall = Time = 1
+trigger1 = stateno = 52 ;Jump land
+value = F7, 1
+
+[statedef -3]
+ 
+
+ [state -3, AI Detect Projectile System]
+type = helper
+trigger1 = ailevel ;M.U.G.E.N 1.0+
+trigger1 = !numhelper(33333333)
+name = "AI Detect Projectile System"
+ID = 33333333
+stateno = 33333333
+postype = p1
+ownpal = 1
+keyctrl = 0
+size.xscale = 1.0
+size.yscale = 1.0
+
