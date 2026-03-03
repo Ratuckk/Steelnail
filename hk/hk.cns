@@ -1,0 +1,392 @@
+; Constants and state file.
+; There are comments scattered through this file, so you may like to
+; take a look if would like to learn more about the cns.
+
+[Data]
+life = 1000			;Amount of life to start with
+attack = 100		;attack power (more is stronger)
+defence = 100		;defensive power (more is stronger)
+fall.defence_up = 50	;Percentage to increase defense everytime player is knocked down
+liedown.time = 60		;Time which player lies down for, before getting up
+airjuggle = 15		;Number of points for juggling
+sparkno = -1			;Default hit spark number for HitDefs
+guard.sparkno = -1	;Default guard spark number
+KO.echo = 0			;1 to enable echo on KO
+volume = 0			;Volume offset (negative for softer)
+IntPersistIndex = 58	;Variables with this index and above will not have their values
+FloatPersistIndex = 40  ;reset to 0 between rounds or matches. There are 60 int variables,
+  				;indexed from 0 to 59, and 40 float variables, indexed from 0 to 39.
+  				;If omitted, then it defaults to 60 and 40 for integer and float
+  				;variables repectively, meaning that none are persistent, i.e. all
+  				;are reset. If you want your variables to persist between matches,
+  				;you need to override state 5900 from common1.cns.
+
+
+[Size]
+xscale = .28	;Horizontal scaling factor.
+yscale = .28	;Vertical scaling factor.
+ground.back = 25		;Player width (back, ground)
+ground.front = 25		;Player width (front, ground)
+air.back = 25		;Player width (back, air)
+air.front = 25		;Player width (front, air)
+height = 60			;Height of player (for opponent to jump over)
+attack.dist = 160		;Default attack distance
+proj.attack.dist = 90	;Default attack distance for projectiles
+proj.doscale = 0		;Set to 1 to scale projectiles too   
+head.pos = -5, -100	;Approximate position of head
+mid.pos = -5, -45		;Approximate position of midsection
+shadowoffset = 0		;Number of pixels to vertically offset the shadow
+draw.offset = 0,0		;Player drawing offset in pixels (x, y)
+
+[Velocity]
+walk.fwd  = 2	;Walk forward
+walk.back = -2		;Walk backward
+run.fwd  = 9, 0		;Run forward (x, y)
+run.back = -9,-7	;Hop backward (x, y)
+jump.neu = 0,-12		;Neutral jumping velocity (x, y)
+jump.back = -4.55		;Jump back Speed (x, y)
+jump.fwd = 4.5		;Jump forward Speed (x, y)
+runjump.back = -7.55,-8.1;Running jump speeds (opt)
+runjump.fwd = 9,-8.1	;.
+airjump.neu = 0,-8.1	;.
+airjump.back = -2.55	;Air jump speeds (opt)
+airjump.fwd = 2.5		;.
+
+
+[Movement]
+airjump.num = 0		;Number of air jumps allowed (opt)
+airjump.height = 35	;Minimum distance from ground before you can air jump (opt)
+yaccel = .54		;Vertical acceleration
+stand.friction = .93	;Friction coefficient when standing
+crouch.friction = .82	;Friction coefficient when crouching
+
+;---------------------------------------------------------------------------
+; Format:
+; [Statedef STATENO]
+; type = ?      S/C/A/L  stand/crouch/air/liedown
+; movetype = ?  I/A/H    idle/attack/gethit
+; physics = ?   S/C/A/N  stand/crouch/air/none
+; juggle = ?             air juggle points move requires
+;
+; [State STATENO, ?]     ? - any number you choose
+; type = ?
+; ...
+
+;---------------------------------------------------------------------------
+; Lose by Time Over
+; CNS difficulty: basic
+[Statedef 170]
+type = S
+ctrl = 0
+anim = 170
+velset = 0,0
+
+[State 170, 1]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------------------------------------------------------------
+; Win state decider
+; CNS difficulty: basic
+[Statedef 180]
+type = S
+
+[State 180, 1]
+type = ChangeState
+trigger1 = Time = 0
+value = 181
+
+;---------------------------------------------------------------------------
+; Win pose 1
+; CNS difficulty: basic
+[Statedef 181]
+type = S
+ctrl = 0
+anim = 180
+velset = 0,0
+
+[State 181, 1]
+type = NotHitBy
+trigger1 = 1
+value = SCA
+time = 1
+
+;---------------------------------------------------------------------------
+; Introduction
+; CNS difficulty: basic
+[Statedef 190]
+type = S
+ctrl = 0
+anim = 190
+velset = 0,0
+
+[State 0, EnvShake]
+type = EnvShake
+trigger1 = animelem = 9
+time = 30
+freq = 160
+ampl = -4
+phase = 120
+ignorehitpause = 1
+[State 0, EnvShake]
+type = EnvShake
+trigger1 = animelem = 16
+time = 10
+freq = 160
+ampl = -4
+phase = 120
+ignorehitpause = 1
+
+[State 60, Arena Grande atras]
+type = Explod
+trigger1 = animelem = 16
+anim = 17100
+ID =  7100
+pos = 60,0
+postype = p1  ;p2,front,back,left,right
+facing = -1
+vfacing = 1
+bindtime = 1
+removetime = -2
+supermove = 1
+vel = 5
+accel = -.2
+scale = 1.5,1;0.35
+sprpriority = 2
+persistent = 0
+ownpal = 1
+removeongethit = 0
+ignorehitpause = 1
+[State 60, Arena Grande atras]
+type = Explod
+trigger1 = animelem = 16
+anim = 17100
+ID =  7100
+pos = -60,0
+postype = p1  ;p2,front,back,left,right
+facing = 1
+vfacing = 1
+bindtime = 1
+removetime = -2
+supermove = 1
+vel = -5
+accel = .2
+scale = 1.5,1;0.35
+sprpriority = 2
+persistent = 0
+ownpal = 1
+removeongethit = 0
+ignorehitpause = 1
+
+[State Explod Impacto 2]
+type = Explod
+trigger1 = animelem = 9;time = 0
+anim = 671
+ID = 7100
+pos = 0,-110
+trans = sub
+postype = p1
+removetime = -2
+scale = 1,1
+sprpriority = 12
+persistent = 0
+ownpal = 1
+removeongethit = 0
+ignorehitpause = 1
+[State Explod Impacto 2]
+type = Explod
+trigger1 = animelemno(0) = 9;time = 0
+anim = 7620
+ID = 7100
+pos = 0,-110
+postype = p1
+removetime = -2
+scale = 1,.5
+angle = random
+trans = sub
+sprpriority = 12
+persistent = 3
+ownpal = 1
+removeongethit = 0
+ignorehitpause = 1
+
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = animelem = 9
+value = S779,77 
+[State 0, PlaySnd]
+type = PlaySnd
+trigger1 = animelem = 16
+value = S1,9
+
+[State 0, Offset]
+type = Offset
+trigger1 = animelemno(0) = [9,10]
+trigger1 = time%3 = 0
+x = 3
+
+
+
+[State -2,***]
+type = helper
+trigger1 = animelem = 9
+name = "9510"
+id = 20020
+pos = 10,-110
+postype = p1
+stateno = 9510 
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+persistent = 3
+size.xscale = 1.2 
+size.yscale = 1.2 
+[State -2,***]
+type = helper
+trigger1 = animelem = 9
+name = "9510"
+id = 20020
+pos = 10,-110
+postype = p1
+stateno = 9511 
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+persistent = 3
+size.xscale = 1.2 
+size.yscale = 1.2 
+ 
+[State -2,***]
+type = helper
+trigger1 = animelem = 9
+name = "9510"
+id = 20020
+pos = 10,-110
+postype = p1
+stateno = 9512 
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+persistent = 3
+size.xscale = 1.2 
+size.yscale = 1.2 
+[State -2,***]
+type = helper
+trigger1 = animelem = 9
+name = "9510"
+id = 20020
+pos = 10,-110
+postype = p1
+stateno = 9513 
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+persistent = 3
+size.xscale = 1.2 
+size.yscale = 1.2 
+[State -2,***]
+type = helper
+trigger1 = animelem = 9
+name = "9510"
+id = 20020
+pos = 10,-110
+postype = p1
+stateno = 9514 
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+persistent = 3
+size.xscale = 1.2 
+size.yscale = 1.2 
+[State -2,***]
+type = helper
+trigger1 = animelem = 9
+name = "9510"
+id = 20020
+pos = 10,-110
+postype = p1
+stateno = 9515 
+helpertype = normal
+ownpal = 1
+keyctrl = 0
+persistent = 3
+size.xscale = 1.2 
+size.yscale = 1.2 
+
+
+[State 0, Explod]
+type = Explod
+trigger1 = animelem = 16
+anim = 7086;8859
+ID = 16891
+pos = 0,0
+postype = p1  ;p2,front,back,left,right
+facing = -1;cond(random< 500,1,-1)
+vfacing = 1
+sprpriority = 5
+removetime = -2
+scale = 1.5,1.5
+ownpal = 1
+persistent = 0
+ignorehitpause = 1
+pausemovetime = 99
+[State 0, Explod]
+type = Explod
+trigger1 = animelem = 9
+anim = 30101;8859
+ID = 16891
+pos = 0,0
+postype = p1  ;p2,front,back,left,right
+facing = -1;cond(random< 500,1,-1)
+vfacing = 1
+sprpriority = 5
+removetime = -2
+scale = 1 ,1 
+ontop = 1
+ownpal = 1
+persistent = 0
+ignorehitpause = 1
+pausemovetime = 99
+
+[State Explod Impacto 2]
+type = Explod
+trigger1 = animelem = 9;time = 0
+anim = 512
+ID = 7100
+pos = 10,-110
+trans = sub
+postype = p1
+removetime = -2
+scale = .35,.35
+sprpriority = 12
+persistent = 0
+ownpal = 1
+removeongethit = 0
+ignorehitpause = 1
+
+[State 6010, flash]
+type = EnvColor
+trigger1 = animelem = 9;time = [3,6]
+value = 240, 240, 240
+time = 4
+ignorehitpause = 1
+
+ 
+
+[State 190, 1] ;Freeze animation until PreIntro is over
+type = ChangeAnim
+trigger1 = RoundState = 0
+value = 190
+
+[State 190, 2] ;Assert this until you want "round 1, fight" to begin
+type = AssertSpecial
+trigger1 = 1
+flag = Intro
+
+[State 190, 4] ;Change to stand state
+type = ChangeState
+trigger1 = AnimTime = 0
+value = 0
+ 
