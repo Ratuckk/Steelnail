@@ -1,0 +1,35 @@
+
+; Player information
+[Info]
+name         = "Soul Warrior"   ; Name of character
+displayname  = "Soul Warrior"  ; Name of character to display
+versiondate  = 20/07/25          ; Version date of character (MM,DD,YYYY or X.XX or extX.X.X)
+mugenversion = 1.1           ; Version of MUGENext character works on (X.XX or extX.X.X)
+author       = "Ziaker"   ; Character author name
+pal.defaults = 1,2,3,4,5,6   ; Default palettes in order of preference (up to 4, starts from 1)
+localcoord   = 320,240       ; Local coordinate space (width, height)
+
+; Files for the player
+[Files]
+cmd      = Mage.cmd          ; Command set
+cns      = Mage.cns          ; Constants
+st       = Mage.cns     
+st1 = Nail.cns
+st2 = Extra.cns
+st3 = Normals.cns
+st4 = Helpers.cns
+st5 = projs.cns      ; States
+stcommon = common1.cns       ; Common states (from data or motif)
+sprite   = Mage.sff          ; Sprite
+anim     = Mage.air          ; Animation
+sound    = Mage.snd          ; Sound
+
+pal1   = mage.act   ;Palettes (can have up to 12)
+pal2   = mage2.act
+pal3 = mage3.act
+
+ 
+; Arcade mode
+[Arcade]
+;intro.storyboard = intro.def
+;ending.storyboard = ending.def
