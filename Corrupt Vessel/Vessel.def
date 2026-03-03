@@ -1,0 +1,29 @@
+; Definition file for player
+; Contains all the filenames needed for the character
+
+; Player information
+[Info]
+name = "Infected Hollow"        ;Name of character
+displayname = "Infected Hollow" ;Name of character to display
+versiondate =   14/05/2025 ;Version date of character
+mugenversion =  1.1 ;Version of M.U.G.E.N character works on
+author = "Ziaker"      ;Character author name
+pal.defaults =   1,2,3,4;Default palettes in order of preference
+
+; Files for the player
+[Files]
+cmd     = Vessel.cmd   ;Command set
+cns     = Vessel.cns   ;Constants
+st      = Vessel.cns   ;States
+st1 = Nail.cns
+st2 = Extra.cns
+stcommon = common1.cns
+st3 = Normals.cns
+st4 = Helpers.cns
+st5 = projs.cns 
+stcommon = Vessel.cns ;Common states
+sprite  = Vessel.sff   ;Sprite
+anim    = Vessel.air   ;Animation
+sound  = Vessel.snd   ;Sound 
+
+;pal1 = hollow1.act
